@@ -1,0 +1,6 @@
+features/
+__pycache__/
+features_extraction/__pycache__/
+*.pth
+models/
+runs/
