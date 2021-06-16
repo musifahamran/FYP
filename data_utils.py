@@ -249,7 +249,7 @@ class SERDataset:
         
     """
     def __init__(self, features_data, num_classes = 4,
-                val_speaker_id='1M', test_speaker_id='1F', 
+                val_speaker_id='studio1-10V', test_speaker_id='studio1-10T',
                 oversample=False):
         
         """

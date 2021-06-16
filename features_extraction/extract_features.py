@@ -68,6 +68,13 @@ def main(args):
         database = SER_DATABASES[dataset](dataset_dir, emot_map=emot_map)
         print(database.get_classes())
 
+    elif dataset == 'THAI':
+        #Check emotion string
+        emot_map = {'Angry': 0, 'Happy': 1, 'Sad': 2, 'Neutral': 3}
+        include_scripted = False
+        database = SER_DATABASES[dataset](dataset_dir, emot_map=emot_map,
+                                          include_scripted=include_scripted)
+
     #Get file paths and label in database
     speaker_files = database.get_files()
 
@@ -128,7 +135,8 @@ def parse_arguments(argv):
     parser.add_argument('dataset', type=str, default='IEMOCAP',
         help='Dataset to extract features. Options:'
              '  - IEMOCAP (default)'
-             '  - EMODB')
+             '  - EMODB'
+             '  - THAI')
     parser.add_argument('dataset_dir', type=str,
         help='Path to the dataset directory.')
     
