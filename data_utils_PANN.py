@@ -271,19 +271,19 @@ class SERDataset:
             
             #Concatenate spectrograms from speakers in training set
             if train_data is None:
-                train_data = features_data[speaker_id][0].astype(np.float32)
+                print("Speaker ID:", speaker_id)
+                train_data = features_data[speaker_id][0]
             else:
-                train_data = np.concatenate((train_data, 
-                                            features_data[speaker_id][0].astype(np.float32) ),
-                                            axis=0)
+                print("Speaker ID concatanated:", speaker_id)
+                train_data = np.append((train_data,
+                                            features_data[speaker_id][0]))
             
             #Concatenate the corresponding labels
             if train_labels is None:
-                train_labels = features_data[speaker_id][2].astype(np.long)
+                train_labels = features_data[speaker_id][1]
             else:
                 train_labels = np.concatenate((train_labels,
-                                               features_data[speaker_id][2].astype(np.long)),
-                                               axis=0)
+                                               features_data[speaker_id][1]))
         
         self.train_data     = train_data
         self.train_labels   = train_labels
