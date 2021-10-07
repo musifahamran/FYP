@@ -1,6 +1,6 @@
 # Emotion Analysis from Speech - PyTorch Implementation
 
-This repository contains work from https://github.com/samsudinng/speech_emo_recognition  
+This repository contains work from https://github.com/samsudinng/speech_emo_recognition 
 
 This is the topic of my final year project (Bachelor in CS, Nanyang Technological University, Singapore). This repository also includes resources for SER, including publications, datasets, and useful python packages. 
 
@@ -45,21 +45,33 @@ Three models are available in the framework:
 3. __ResNet18__
 - Pre-trained ResNet18, finetuned to classify emotion from speech spectrogram images (IEMOCAP).
 - The model is based on *torchvision.models.resnet18* model in pyTorch. 
+- This model perform better than AlexNet and FCN+GAP on the THAI dataset.
 
 
 The model to be trained can be selected via command line with the following labels. The summary of model parameters and accuracy (5-fold, speaker independent cross-validation) are also summarized below.
+
+For 16khz IEMOCAP corpus:
 
 |Model label|Model Name|# of Params.|Weighted Accuracy|Unweighted Accuracy| Model Setting |
 |-----------|----------|----------|----------|----------| ----------|
 |*'alexnet'*|AlexNet Finetuning| ~57m | 74.0% | 64.4%| baseline + stability training|
 |*'alexnet_gap'*|FCN+GAP| ~2.5m | 73.2% | 62.6% | baseline |
+|*'resnet18'*|ResNet 18| ~11m | 71.6% | 59.8% | baseline |
+
+For 8khz IEMOCAP corpus:
+
+|Model label|Model Name|# of Params.|Weighted Accuracy|Unweighted Accuracy| Model Setting |
+|-----------|----------|----------|----------|----------| ----------|
+|*'alexnet'*|AlexNet Finetuning| ~57m | 68.7% | 57.8%| baseline + stability training|
+|*'alexnet_gap'*|FCN+GAP| ~2.5m | 70.5% | 58.3% | baseline |
+|*'resnet18'*|ResNet 18| ~11m | 68.7% | 57.1% | baseline |
 
 
 ------------------------------------
 ## Usage
 
 ### Feature Extraction
-
+Feature Extraction can be done for 
 ### Training/Finetuning
 The main training script is train_ser.py.
 
@@ -87,12 +99,12 @@ python train_ser.py IEMOCAP_logspec200.pkl --ser_model alexnet --val_id 1F --tes
 
 Note:
 - IEMOCAP database consists of 5 sessions * 2 speakers per session. The speakers (5 males, 5 females) have been assigned ID based on the session and gender {1F, 1M, 2F, 2M, 3F, 3M, 4F, 4M, 5F, 5M}
+- THAI_SER database consists of 80 studio recordings seperated in 10 batches per folder. As there are 10 studio recordings in each batch folder, they are split and assigned as 1T (Studio 1-5) and 1V (Studio6-10) for batch folder name Studio 1-10.
 
 ## Requirements
 
 ------------------------------------
 ## SER Publications
-
 
 ------------------------------------
 ## SER Datasets
@@ -100,6 +112,8 @@ Note:
 ### IEMOCAP
 
 ### emoDB
+
+### THAI SER
 
 ------------------------------------
 ## Useful Packages
