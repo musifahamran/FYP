@@ -1,13 +1,8 @@
-# Speech Emotion Recognition (SER) with Pre-trained Image Classifier - PyTorch Implementation
+# Emotion Analysis from Speech - PyTorch Implementation
 
-This repository containts my works on speech emotion recognition using spectrogram of the utterances as input. Spectrogram contains time-frequency information which reflects the acoustic cues, including those from emotion. I formulated the task as image classification using pre-trained image classification network. I proposed two AlexNet-based models: __AlexNet Finetuning__ and __FCN+GAP__ (Fully-Convolutional Network with Global Average Pooling). These networks were finetuned for speech emotion recognition with __IEMOCAP__ emotion speech dataset. I also implemented two deep learning enhancement techniques based on __mixup augmentation__ and __stability training__. These enhancements aim to improve generalization and robustness of the models given unseen utterances and diverse acoustic environments. 
+This repository contains work from https://github.com/samsudinng/speech_emo_recognition 
 
-This is the topic of my project as part of my post-graduate study (MSc. in AI, Nanyang Technological University, Singapore). This repository also includes resources for SER, including publications, datasets, and useful python packages. These resources are collected during my research, implementation and optimization phase. 
-
-
-## This Repository
-
-My approach was inspired by the work of Zhang et. al. (2019) presented in [*Attention Based Fully Convolutional Network for Speech Emotion Recognition*](https://arxiv.org/abs/1806.01506). The pretrained image classifier model was based on [AlexNet](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf), a CNN architecture designed for image classification. The following sections describes the structure and components of this framework.
+This is the topic of my final year project (Bachelor in CS, Nanyang Technological University, Singapore). This repository also includes resources for SER, including publications, datasets, and useful python packages. 
 
 ### Features extraction
 
@@ -16,6 +11,8 @@ The framework supports features extraction from the following database:
 1. [__IEMOCAP__](https://sail.usc.edu/iemocap/), a database of approximately 12 hours of audiovisual data, including video, speech, motion capture of face, and text transcriptions. The database was organized into 5 sessions, where each session contains dialog between 2 unique actors (1 male, 1 female). Each session contains scripted and improvised dialog, manually segmented into utterances and annotated by at least 3 human annotators. The average duration of each utterance is 4-5 sec. The emotion classes are {*anger, happiness, excitement, sadness, frustration, fear, surprise, neutral, others*}.
 
 2. [__emoDB__](http://www.emodb.bilderbar.info/start.html), a German database of emotional speech of approximately 500 utterances. The utterances were recorded with 10 actors (5 male, 5 female). The average duration of each utterance is 2-3 sec. The emotion classes are {*happy, angry, anxious, fearful, bored, disgust, neutral*}.
+
+3. [__THAI_SER__](https://github.com/vistec-AI/dataset-releases/releases/tag/v1), a THAI database of of 41 hours, 36 mins of emotional speech of 27,854 utterances. It contains 100 recordings split into Studio and Zoom with over 200 actors. The emotion classes associated are {*happiness, anger, sadness, frustration, neutral*}.
 
 Spectral features are extracted from the dataset using [*librosa*](https://librosa.org) audio analysis package. The supported features are:
 
@@ -33,7 +30,7 @@ The spectrogram of each utterance is splitted into segments with length *T*. If 
 
 ### SER Models
 
-Two models are available in the framework:  
+Four models are available in the framework:  
 
 1. __AlexNet Finetuning__ 
 - Pre-trained AlexNet, finetuned to classify emotion from speech spectrogram images (IEMOCAP). 
@@ -45,20 +42,40 @@ Two models are available in the framework:
 - Fully-connected layers are prone to over-fitting and require large number of parameters. GAP was proposed by Lin et. al. (2014) in [*Network In Network*](https://arxiv.org/abs/1312.4400) to address these issues.
 - This model perform as well as AlexNet Finetuning but requiring only 4.5% as many parameters.
 
+3. __ResNet18__
+- Pre-trained ResNet18, finetuned to classify emotion from speech spectrogram images (IEMOCAP).
+- The model is based on *torchvision.models.resnet18* model in pyTorch. 
+- This model perform better than AlexNet and FCN+GAP on the THAI dataset.
+
+4. __VGG11__
+- Pre-trained VGG11, finetuned to classify emotion from speech spectrogram images (IEMOCAP).
+- - The model is based on *torchvision.models.vgg11* model in pyTorch. 
+
 
 The model to be trained can be selected via command line with the following labels. The summary of model parameters and accuracy (5-fold, speaker independent cross-validation) are also summarized below.
+
+For 16khz IEMOCAP corpus:
 
 |Model label|Model Name|# of Params.|Weighted Accuracy|Unweighted Accuracy| Model Setting |
 |-----------|----------|----------|----------|----------| ----------|
 |*'alexnet'*|AlexNet Finetuning| ~57m | 74.0% | 64.4%| baseline + stability training|
 |*'alexnet_gap'*|FCN+GAP| ~2.5m | 73.2% | 62.6% | baseline |
+|*'resnet18'*|ResNet 18| ~11m | 71.6% | 59.8% | baseline |
+
+For 8khz IEMOCAP corpus:
+
+|Model label|Model Name|# of Params.|Weighted Accuracy|Unweighted Accuracy| Model Setting |
+|-----------|----------|----------|----------|----------| ----------|
+|*'alexnet'*|AlexNet Finetuning| ~57m | 68.7% | 57.8%| baseline + stability training|
+|*'alexnet_gap'*|FCN+GAP| ~2.5m | 70.5% | 58.3% | baseline |
+|*'resnet18'*|ResNet 18| ~11m | 68.7% | 57.1% | baseline |
 
 
 ------------------------------------
 ## Usage
 
 ### Feature Extraction
-
+Feature Extraction can be done for 8kHz and 16kHz .wav files
 ### Training/Finetuning
 The main training script is train_ser.py.
 
@@ -86,11 +103,18 @@ python train_ser.py IEMOCAP_logspec200.pkl --ser_model alexnet --val_id 1F --tes
 
 Note:
 - IEMOCAP database consists of 5 sessions * 2 speakers per session. The speakers (5 males, 5 females) have been assigned ID based on the session and gender {1F, 1M, 2F, 2M, 3F, 3M, 4F, 4M, 5F, 5M}
+- THAI_SER database consists of 80 studio recordings seperated in 10 batches per folder. As there are 10 studio recordings in each batch folder, they are split and assigned as 1T (Studio 1-5) and 1V (Studio6-10) for batch folder name Studio 1-10.
 
 ## Requirements
 
 ------------------------------------
 ## SER Publications
+|Title| Link |
+|-----------|----------|
+| Deep Residual Learning for Image Recognition | https://arxiv.org/abs/1512.03385 |
+| Very Deep Convolutional Networks for Large-Scale Image Recognition | https://arxiv.org/abs/1409.1556 |
+
+
 
 
 ------------------------------------
@@ -100,25 +124,7 @@ Note:
 
 ### emoDB
 
-------------------------------------
-## Useful Packages
-
-### Audio feature extraction
-
-librosa, python_speech_features
-
-### 
-
-------------------------------------
-## How to Improve Model Performance?
-
-### Dataset Oversampling
-
-### Mixup
-
-### Data Augmentation
-
-
+### THAI SER
 
 
 
