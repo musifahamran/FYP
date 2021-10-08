@@ -30,7 +30,7 @@ The spectrogram of each utterance is splitted into segments with length *T*. If 
 
 ### SER Models
 
-Three models are available in the framework:  
+Four models are available in the framework:  
 
 1. __AlexNet Finetuning__ 
 - Pre-trained AlexNet, finetuned to classify emotion from speech spectrogram images (IEMOCAP). 
@@ -46,6 +46,10 @@ Three models are available in the framework:
 - Pre-trained ResNet18, finetuned to classify emotion from speech spectrogram images (IEMOCAP).
 - The model is based on *torchvision.models.resnet18* model in pyTorch. 
 - This model perform better than AlexNet and FCN+GAP on the THAI dataset.
+
+4. __VGG11__
+- Pre-trained VGG11, finetuned to classify emotion from speech spectrogram images (IEMOCAP).
+- - The model is based on *torchvision.models.vgg11* model in pyTorch. 
 
 
 The model to be trained can be selected via command line with the following labels. The summary of model parameters and accuracy (5-fold, speaker independent cross-validation) are also summarized below.
@@ -71,7 +75,7 @@ For 8khz IEMOCAP corpus:
 ## Usage
 
 ### Feature Extraction
-Feature Extraction can be done for 
+Feature Extraction can be done for 8kHz and 16kHz .wav files
 ### Training/Finetuning
 The main training script is train_ser.py.
 
@@ -121,26 +125,6 @@ Note:
 ### emoDB
 
 ### THAI SER
-
-------------------------------------
-## Useful Packages
-
-### Audio feature extraction
-
-librosa, python_speech_features
-
-### 
-
-------------------------------------
-## How to Improve Model Performance?
-
-### Dataset Oversampling
-
-### Mixup
-
-### Data Augmentation
-
-
 
 
 
