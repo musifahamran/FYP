@@ -21,7 +21,7 @@ def init_bn(bn):
 
 
 '''
-2 Models Available:
+4 Models Available:
    - SER_AlexNet     : AlexNet model from pyTorch (CNN features layer + FC classifier layer)
    - SER_AlexNet_GAP : Fully-Convolutional model with AlexNet features layer + global average pooling (GAP) classifier
                         layer
