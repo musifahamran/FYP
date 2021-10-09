@@ -8,6 +8,7 @@ from collections import Counter
 import pandas as pd
 from database import SER_DATABASES
 import random
+import faulthandler; faulthandler.enable()
 
 
 def main(args):
@@ -61,7 +62,16 @@ def main(args):
         #Initialize database
         database = SER_DATABASES[dataset](dataset_dir, emot_map=emot_map, 
                                         include_scripted = include_scripted)
-    
+    elif dataset == 'IEMOCAP_8k':
+        #Same as above dataset but catered to 8k set
+        #must set --nfreq to 100 or else extraction will fail
+        emot_map = {'ang': 0, 'sad': 1, 'hap': 2, 'neu': 3}
+        include_scripted = False
+
+        # Initialize database
+        database = SER_DATABASES[dataset](dataset_dir, emot_map=emot_map,
+                                          include_scripted=include_scripted)
+
     elif dataset == 'EMODB':
         # Usually for emoDB, all the 7 emotions are used for classification
         emot_map={'neutral':0,'happy':1,'sad':2,'angry':3,'bored':4,'fear':5,'disgust':6}
@@ -70,7 +80,7 @@ def main(args):
 
     elif dataset == 'THAI':
         #Check emotion string
-        emot_map = {'Angry': 0, 'Happy': 1, 'Sad': 2, 'Neutral': 3}
+        emot_map = {'Angry': 0, 'Sad': 1, 'Happy': 2, 'Neutral': 3}
         include_scripted = False
         database = SER_DATABASES[dataset](dataset_dir, emot_map=emot_map,
                                           include_scripted=include_scripted)
@@ -98,7 +108,7 @@ def main(args):
     data_shape=[]
     for i,speaker in enumerate(features_data.keys()):
         #print(f'\tSpeaker {speaker:>2}: {sorted(Counter(features_data[speaker][2]).items())}')
-        cnt = sorted(Counter(features_data[speaker][2]).items())
+        cnt = 0 #sorted(Counter(features_data[speaker][2]).items())
         
         for item in cnt:
             #print(item)
@@ -113,12 +123,12 @@ def main(args):
     #print(class_dist)
     df = {"speakerID": speakers,
           "shape (N,C,F,T)": data_shape}
-    
+
     for c in range(class_dist.shape[1]):
         df[classes[c]] = class_dist[:,c]
-    
+
     class_dist_f = pd.DataFrame(df)
-    class_dist_f = class_dist_f.to_string(index=False) 
+    class_dist_f = class_dist_f.to_string(index=False)
     print(class_dist_f)
      
     print('\n')
@@ -135,6 +145,7 @@ def parse_arguments(argv):
     parser.add_argument('dataset', type=str, default='IEMOCAP',
         help='Dataset to extract features. Options:'
              '  - IEMOCAP (default)'
+             '  - IEMOCAP_8k'
              '  - EMODB'
              '  - THAI')
     parser.add_argument('dataset_dir', type=str,
