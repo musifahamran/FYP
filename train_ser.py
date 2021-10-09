@@ -4,7 +4,7 @@ import pickle
 from data_utils import SERDataset
 import torch
 import numpy as np
-from model import SER_AlexNet, SER_AlexNet_GAP
+from model import SER_AlexNet, SER_AlexNet_GAP, SER_RESNET, SER_VGG_11
 from encoder import Cnn10, Cnn14
 import torch.nn as nn
 import torch.optim as optim
@@ -37,6 +37,7 @@ def main(args):
             #parameters for tuning
             'oversampling': args.oversampling,
             'pretrained': args.pretrained,
+            'bestModel': args.bestModel,
             'mixup' : args.mixup
             }
 
@@ -62,9 +63,10 @@ def main(args):
                                oversample=args.oversampling
                                )
 
+
     # Train
     train_stat = train(ser_dataset, params, save_label=args.save_label)
-
+    
     return train_stat
 
 
@@ -111,6 +113,9 @@ def parse_arguments(argv):
         help='By default, SER_AlexNet or SER_AlexNet_GAP model weights are'
              'initialized randomly. Set this flag to initalize with '
              'ImageNet pre-trained weights.')
+
+    parser.add_argument('--bestModel', action='store_true',
+                        help='Use model finetuned by IEMOCAP dataset.')
     
     parser.add_argument('--mixup', action='store_true',
         help='Set this to true to perform mixup at dataloader')
@@ -189,6 +194,7 @@ def test(model, criterion, test_dataset, batch_size, device,
 def train(dataset, params, save_label='default'):
 
     #get dataset
+    writer = SummaryWriter()
     train_dataset = dataset.get_train_dataset()
     train_loader = torch.utils.data.DataLoader(train_dataset, 
                                 batch_size=params['batch_size'], 
@@ -219,10 +225,22 @@ def train(dataset, params, save_label='default'):
         model = SER_AlexNet_GAP(num_classes=num_classes,
                             in_ch=num_in_ch,
                             pretrained=pretrained).to(device)
-    elif ser_model == 'cnn10':
-        model = Cnn10(num_classes=num_classes,
-                                in_ch=num_in_ch,
-                                pretrained=pretrained).to(device)
+    elif ser_model == 'resnet18':
+        model = SER_RESNET(num_classes=num_classes,
+                            in_ch=num_in_ch,
+                            pretrained=pretrained).to(device)
+    elif ser_model == 'vgg11':
+        model = SER_VGG_11(num_classes=num_classes,
+                            in_ch=num_in_ch,
+                            pretrained=pretrained).to(device)
+    # elif ser_model == 'cnn10':
+    #     model = Cnn10(num_classes=num_classes,
+    #                         in_ch=num_in_ch,
+    #                         pretrained=pretrained).to(device)
+    # elif ser_model == 'cnn14':
+    #     model = Cnn14(num_classes=num_classes,
+    #                         in_ch=num_in_ch,
+    #                         pretrained=pretrained).to(device)
     else:
         raise ValueError('No model found!')
     
@@ -265,6 +283,7 @@ def train(dataset, params, save_label='default'):
         for i, batch in enumerate(train_loader):
             
             train_data_batch, train_labels_batch = batch
+	    #train_data_batch=train_data_batch.flatten(start_dim=1, end_dim=2)
 
             # Clear gradients
             optimizer.zero_grad()
@@ -295,6 +314,7 @@ def train(dataset, params, save_label='default'):
 
                 # Loss
                 train_loss = criterion(preds, train_labels_batch)
+		
             
             # Compute the loss, gradients, and update the parameters
             total_loss += train_loss.detach().item()
@@ -303,6 +323,7 @@ def train(dataset, params, save_label='default'):
             
         # Evaluate training data
         train_loss = total_loss / (i+1)
+        writer.add_scalar("Loss/train", train_loss, epoch)
         all_train_loss.append(loss_format.format(train_loss))
         
         
@@ -347,7 +368,7 @@ def train(dataset, params, save_label='default'):
               "{:.2f}".format(test_result[0], test_result[1], test_result[2]))
         print("Confusion matrix:\n{}".format(confusion_matrix[1]))   
         
-
+    writer.flush()
     return(all_train_loss, all_train_wa, all_train_ua,
             all_val_loss, all_val_wa, all_val_ua,
             loss_format.format(test_result[0]), 
