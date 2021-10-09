@@ -10,7 +10,7 @@ from pysndfx import  AudioEffectsChain
 from create_mixed_audio_file import create_mixed_audio_file
 import random
 
-NOISE_DIR='noise_wav/'
+NOISE_DIR='/home/FYP/musi0002/speech_emo_recognition/features_extraction/noise_wav/'
 NOISE_FILES={'cafetaria.wav': 0,
              #'car.wav': 0,
              'kitchen.wav': 0,
@@ -20,7 +20,20 @@ NOISE_FILES={'cafetaria.wav': 0,
              'presto.wav': 10,
              #'station.wav': 6,
              'river.wav':0,
-             'square.wav':0
+             'square.wav':0,
+             'AirportAnnouncement_11.wav':0,
+             'LivingRoom_1.wav':10,
+             'Restaurant_1.wav':5,
+             #'AirConditioner_1.wav':2,
+             'Babble_1.wav':6,
+             #'WasherDryer_1.wav':10,
+             'VacuumCleaner_1.wav':10,
+             'Hallway_1.wav':0,
+             'Cafe_1.wav':13,
+             'NeighborSpeaking_1.wav':15,
+             'Office_1.wav':0,
+             'Field_1.wav':0,
+             'Washing_1.wav':-5
              }
 
 
@@ -142,8 +155,45 @@ def extract_features(speaker_files, features, params):
                 
             data_tot = np.concatenate((data_tot, data_reverb_tot), axis=0)
 
+            # + Gaussion noise
+            data_gaussian_tot = list()
+            labels_temp, segs_temp = list(), list()  # for verification
+            fx = (AudioEffectsChain().reverb())
+
+            for wav_path, emotion in speaker_files[speaker_id]:
+                # Read wave data
+                x, sr = librosa.load(wav_path, sr=None)
+                # Apply reverb
+                x_gaussian = np.random.normal(0, .1, x.shape)
+                new_signal = x + x_gaussian
+
+                # Pre-emphasis
+                new_signal = librosa.effects.preemphasis(new_signal, zi=[0.0])
+
+                # Extract required features into (C,F,T)
+                features_data_gaussian = GET_FEATURES[features](new_signal, sr, params)
+
+                # Segment features into (N,C,F,T)
+                features_gaussian_segmented = segment_nd_features(features_data_gaussian, emotion, params['segment_size'])
+
+                # Collect all the segments
+                data_gaussian_tot.append(features_gaussian_segmented[1])
+                labels_temp.append(features_gaussian_segmented[3])
+                segs_temp.append(features_gaussian_segmented[0])
+
+            data_gaussian_tot = np.vstack(data_gaussian_tot).astype(np.float32)
+            data_gaussian_tot = np.expand_dims(data_gaussian_tot, axis=0)
+            assert data_gaussian_tot.shape[1] == data_tot.shape[1]
+
+            labels_temp = np.asarray(labels_temp, dtype=np.int8)
+            segs_temp = np.asarray(segs, dtype=np.int8)
+            assert np.array_equal(labels_temp, labels_tot)
+            assert np.array_equal(segs_temp, segs)
+
+            data_tot = np.concatenate((data_tot, data_gaussian_tot), axis=0)
+
             # Make sure everything is extracted properly
-            assert data_tot.shape[0] == len(NOISE_FILES.keys())+2
+            assert data_tot.shape[0] == len(NOISE_FILES.keys())+3
 
         #Put into speaker features dictionary
         print(data_tot.shape)
@@ -390,7 +440,7 @@ GET_FEATURES = {'logspec': extract_logspec,
 
 if __name__ == '__main__':
     #test
-    sig,sr = librosa.load('noise_wav/presto.wav', sr=None)
+    sig,sr = librosa.load('/home/FYP/musi0002/speech_emo_recognition/features_extraction/noise_wav/presto.wav', sr=None)
 
     params={'window': 'hamming',
             'win_length': 40,
