@@ -49,7 +49,7 @@ Four models are available in the framework:
 
 4. __VGG11__
 - Pre-trained VGG11, finetuned to classify emotion from speech spectrogram images (IEMOCAP).
-- - The model is based on *torchvision.models.vgg11* model in pyTorch. 
+- The model is based on *torchvision.models.vgg11* model in pyTorch. 
 
 
 The model to be trained can be selected via command line with the following labels. The summary of model parameters and accuracy (5-fold, speaker independent cross-validation) are also summarized below.
@@ -105,7 +105,43 @@ Note:
 - IEMOCAP database consists of 5 sessions * 2 speakers per session. The speakers (5 males, 5 females) have been assigned ID based on the session and gender {1F, 1M, 2F, 2M, 3F, 3M, 4F, 4M, 5F, 5M}
 - THAI_SER database consists of 80 studio recordings seperated in 10 batches per folder. As there are 10 studio recordings in each batch folder, they are split and assigned as 1T (Studio 1-5) and 1V (Studio6-10) for batch folder name Studio 1-10.
 
-## Requirements
+-----------------------
+## Requirements:
+
+Audio files must be in .wav format.
+
+-----------------------------
+## How to run the scripts:
+
+First extract features from the given database using the following command:
+
+1. python extract_features.py database_name path/to/database --save_dir path/to/where_the_extracted_features_are_saved --save_label name_of_file_to_be_saved
+
+Example:
+```python
+python extract_features.py IEMOCAP /database/IEMOCAP_full_release --save_dir /home/desktop/ser --save_label logspec_features
+ ```
+ If using THAI SER then
+ ```python
+python extract_features.py THAI /database/THAI_SER --nfreq 100 --save_dir /home/desktop/ser --save_label THAI_logspec_features
+ ```
+Second, train the model with the following command:
+ 
+2. python crossval_SER.py
+ 
+Lastly, get the results of the model accuracy with:
+
+ 3. python get_crossval_result.py name_of_label_input_in_Step_1 num_of_kfold_runs num_of_completed_runs path_to_the_pkl_files_from_Step2 
+ 
+ Example:
+```python 
+python get_crossval_result.py logspec_features 5 5 /home/desktop/ser
+ ```
+ 
+ To train with addition of noise,
+ - change the directory of noise files in features_util.py
+ - add in --mixnoise in Step 1
+ - Use python crossval_alexnet_spec2gray_CLoss.py instead in Step 2
 
 ------------------------------------
 ## SER Publications
