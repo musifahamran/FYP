@@ -5,6 +5,7 @@ from data_utils import SERDataset
 import torch
 import numpy as np
 from model import SER_AlexNet, SER_AlexNet_GAP
+from encoder import Cnn10, Cnn14
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as f
@@ -218,6 +219,10 @@ def train(dataset, params, save_label='default'):
         model = SER_AlexNet_GAP(num_classes=num_classes,
                             in_ch=num_in_ch,
                             pretrained=pretrained).to(device)
+    elif ser_model == 'cnn10':
+        model = Cnn10(num_classes=num_classes,
+                                in_ch=num_in_ch,
+                                pretrained=pretrained).to(device)
     else:
         raise ValueError('No model found!')
     
