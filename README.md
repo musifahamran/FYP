@@ -14,19 +14,6 @@ The framework supports features extraction from the following database:
 
 3. [__THAI_SER__](https://github.com/vistec-AI/dataset-releases/releases/tag/v1), a THAI database of of 41 hours, 36 mins of emotional speech of 27,854 utterances. It contains 100 recordings split into Studio and Zoom with over 200 actors. The emotion classes associated are {*happiness, anger, sadness, frustration, neutral*}.
 
-Spectral features are extracted from the dataset using [*librosa*](https://librosa.org) audio analysis package. The supported features are:
-
-|Features Label|Features|# of channels|
-|-----|--------|-------------|
-|*'logspec'* |Log spectrogram |1 |
-|*'logmelspec'* |Log Mel spectrogram |1 |
-|*'logmeldeltaspec'* |Log Mel spectrogram, ∆ , ∆∆ |3 |
-|*'lognrevspec'* |Log spectrogram of signal, signal+white noise and signal+reverb |3 |
-
-The spectrogram of each utterance is splitted into segments with length *T*. If the length of the spectrogram or last block of the split is < *T*, the spectrogram is padded with 0s. Each segment has a shape of (*C, F, T*) where *C* is the number of feature channels, and *F* the number of frequency or mel frequency bins. The extracted features are then organized into a dictionary with speaker ID as the keys, and tuple of all spectrogram segments, utterance-level labels, segment-level labels, and number of segments per utterance corresponding to each speakers.
-
-        {'speaker_id': (all_spectrograms_segments, all_utterance_labels, all_segments_labels, number_of_segments_per_utterance)}
-
 
 ### SER Models
 
@@ -72,51 +59,22 @@ For 8khz IEMOCAP corpus:
 
 
 ------------------------------------
-## Usage
-
-### Feature Extraction
-Feature Extraction can be done for 8kHz and 16kHz .wav files
-### Training/Finetuning
-The main training script is train_ser.py.
-
-
-python train_ser.py <*features_file*> --ser_model <*model*> --val_id <*vid*>
- --test_id <*tid*> --num_epochs <*n*> --batch_size <*b*> --lr <*l*> --seed <*s*> --gpu <*g*> --save_label <*label*> *{additional flags}*
- 
- Example:
- 
- ```python
-python train_ser.py IEMOCAP_logspec200.pkl --ser_model alexnet --val_id 1F --test_id 1M --num_epochs 100 --batch_size 64 --lr 1e-3 --seed 111 --gpu 1 --save_label alexnet_baseline --pretrained --mixup
- ```
- 
-|Script Parameter|Remarks|
-|-----------|----------|
-|features_file|File containing the features (spectrogram) extracted from the speech utterance|
-|model|alexnet, alexnet_gap|
-|vid| the ID of the speaker to be used as validation set (see note)|
-|tid| the ID of the speaker to be used as test set (see note)|
-|g|0 (cpu), 1 (gpu)|
-|label|the best finetuned model will be save to label.pth|
-|additional flags|--pretrained (to use pre-trained model)|
-| | --mixup (to use mixup)|
-| | --oversampling (to use random dataset oversampling)|
-
-Note:
-- IEMOCAP database consists of 5 sessions * 2 speakers per session. The speakers (5 males, 5 females) have been assigned ID based on the session and gender {1F, 1M, 2F, 2M, 3F, 3M, 4F, 4M, 5F, 5M}
-- THAI_SER database consists of 80 studio recordings seperated in 10 batches per folder. As there are 10 studio recordings in each batch folder, they are split and assigned as 1T (Studio 1-5) and 1V (Studio6-10) for batch folder name Studio 1-10.
-
------------------------
 ## Requirements:
 
 Audio files must be in .wav format.
 
 -----------------------------
+## Pretrained models
+
+The models have been trained from the IEMOCAP dataset can be found in the **trained_models** folder.
+For usage of pretrained model in application, see example in **flaskproject** folder.
+
 ## How to run the scripts:
 
-First extract features from the given database using the following command:
-
-1. python extract_features.py database_name path/to/database --save_dir path/to/where_the_extracted_features_are_saved --save_label name_of_file_to_be_saved
-
+#### 1. First extract features from the given database using the following command:
+```python
+python extract_features.py database_name path/to/database --save_dir path/to/where_the_extracted_features_are_saved --save_label name_of_file_to_be_saved
+```
 Example:
 ```python
 python extract_features.py IEMOCAP /database/IEMOCAP_full_release --save_dir /home/desktop/ser --save_label logspec_features
@@ -125,14 +83,14 @@ python extract_features.py IEMOCAP /database/IEMOCAP_full_release --save_dir /ho
  ```python
 python extract_features.py THAI /database/THAI_SER --nfreq 100 --save_dir /home/desktop/ser --save_label THAI_logspec_features
  ```
-Second, train the model with the following command:
- 
-2. python crossval_SER.py
- 
-Lastly, get the results of the model accuracy with:
-
- 3. python get_crossval_result.py name_of_label_input_in_Step_1 num_of_kfold_runs num_of_completed_runs path_to_the_pkl_files_from_Step2 
- 
+#### 2. Train the model with the following command:
+```python 
+ python crossval_SER.py
+``` 
+#### 3. Get model aacuracies
+```python 
+ python get_crossval_result.py name_of_label_input_in_Step_1 num_of_kfold_runs num_of_completed_runs path_to_the_pkl_files_from_Step2 
+``` 
  Example:
 ```python 
 python get_crossval_result.py logspec_features 5 5 /home/desktop/ser
