@@ -87,7 +87,7 @@ python extract_features.py THAI /database/THAI_SER --nfreq 100 --save_dir /home/
 ```python 
  python crossval_SER.py
 ``` 
-#### 3. Get model aacuracies
+#### 3. Get model accuracies
 ```python 
  python get_crossval_result.py name_of_label_input_in_Step_1 num_of_kfold_runs num_of_completed_runs path_to_the_pkl_files_from_Step2 
 ``` 
